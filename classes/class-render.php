@@ -42,7 +42,7 @@ class EuRender {
             <table>
                 <thead>
                     <tr>
-                        <?php foreach( $fields as $field ) ?>
+                        <?php foreach( $fields as $field ): ?>
                             <th><?=$field['label']?></th>
                         <?php endforeach; ?>
                     </tr>
@@ -50,7 +50,7 @@ class EuRender {
                 <tbody>
                     <?php foreach($data as $item): ?>
                         <tr>
-                            <?php foreach( $fields as $field ) ?>
+                            <?php foreach( $fields as $field ): ?>
                                 <td><?=$item[ $field['key'] ]?></td>
                             <?php endforeach; ?>
                         </tr>
@@ -63,9 +63,9 @@ class EuRender {
         return $html;
     }
 
-    function show_client_table() {
+    public static function show_client_table() {
         $page = isset($_GET['page_number']) ? $_GET['page_number'] : 1;
-        $rows_per_page = isset($_GET['rows_per_page']) ? $_GET['rows_per_page'] : 0;
+        $rows_per_page = isset($_GET['rows_per_page']) ? $_GET['rows_per_page'] : 5;
         $users = get_users();
         $clients = [];
         if ( ! empty( $users ) ) {
@@ -77,6 +77,9 @@ class EuRender {
                 }
             }
         }
+        if( count( $clients )==0 ) {
+            $rows_per_page = 5;
+        }
         ob_start();  ?>
             <div style="margin-bottom:20px;">
                 <b>Numero de Clientes registrados:</b> <?=count($clients)?>
@@ -84,15 +87,14 @@ class EuRender {
         <?php
         $html = ob_get_contents();
         ob_end_clean();
-
-        $clients_array = get_object_vars( array_slice($clients, $page, $rows_per_page) );
+        $clients_array = count($clients)>0 ? get_object_vars( array_slice($clients, $page, $rows_per_page) ) : $clients;
         $fields = [
             [ "label" => "Nombre", "key" => "user_login" ],
             [ "label" => "Email", "key" => "user_email" ],
             [ "label" => "Fecha de Registro", "key" => "user_registered" ]
         ];
-        $html_table = EuRender::render_table($clients_array, $fields)
+        $html_table = EuRender::render_table($clients_array, $fields);
         $html_pagination = EuRender::render_pagination($clients, $page, $rows_per_page);
-        return $html.html_table.$html_pagination;
+        return $html.$html_table.$html_pagination;
     }
 }
