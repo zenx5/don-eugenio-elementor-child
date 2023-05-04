@@ -50,7 +50,7 @@ function get_all_clients( $request ) {
 			}
 		}
 	}
-	
+
 	return rest_ensure_response( $response );
 }
 
@@ -63,14 +63,14 @@ function get_unique_client( $request ) {
 		$user->data->meta = get_user_meta( $user->data->ID );
 		$response = $user->data;
 	}
-	
+
 	return rest_ensure_response( $response );
 }
 
 
 function show_client_table() {
 	$page = isset($_GET['page_number']) ? $_GET['page_number'] : 1;
-	$rows_per_page = isset($_GET['rows_per_page']) ? $_GET['rows_per_page'] : 0;	
+	$rows_per_page = isset($_GET['rows_per_page']) ? $_GET['rows_per_page'] : 0;
     $users = get_users();
 	$clients = [];
 	if ( ! empty( $users ) ) {
@@ -121,7 +121,7 @@ function show_client_table() {
 				echo "<a href=\"?rows_per_page=$rows_per_page&page_number=$i\">$i</a> ";
 			}
 		}
-		echo "<a href=\"?rows_per_page=$rows_per_page&page_number=$front\">></a> ";		
+		echo "<a href=\"?rows_per_page=$rows_per_page&page_number=$front\">></a> ";
 	?>
 	</div>
 	<div style="margin-top:20px; margin-bottom:20px; display:flex; justify-content:space-evenly; flex-direction:row; gap:20px;">
@@ -141,7 +141,7 @@ function show_client_table() {
     return $html;
 }
 function add_shortcodes() {
-	add_shortcode('all-clients', 'show_client_table');	
+	add_shortcode('all-clients', 'show_client_table');
 }
 
 add_action('init', 'add_shortcodes');
