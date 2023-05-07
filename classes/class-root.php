@@ -30,6 +30,20 @@ class EuRoot {
             'callback' => ['EuApiRest','get_unique_client'],
             'permission_callback' => '__return_true'
         ) );
+
+        // Endpoint 'entries' para traer las entradas de los formularios
+        register_rest_route( 'wp/v2', '/entries', array(
+            'methods' => 'GET',
+            'callback' => ['EuApiRest','get_all_entries'],
+            'permission_callback' => '__return_true'
+        ) );
+
+        // Endpoint 'join-data' para hacer join de usuarios con metadata
+        register_rest_route( 'wp/v2', '/join-data', array(
+            'methods' => 'GET',
+            'callback' => ['EuApiRest','join_meta_data'],
+            'permission_callback' => '__return_true'
+        ) );
     }
 
 }
