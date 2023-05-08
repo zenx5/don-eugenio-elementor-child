@@ -6,6 +6,7 @@ class EuRender {
 
     public static function show_graph_service($attr=[]) {
         $type = isset( $attr['type'] ) ? $attr['type'] : 'bar';
+        $width = isset( $attr['width'] ) ? $attr['width'] : '50%';
         $services = [
             "Dolares" => 0,
             "Oro" => 0,
@@ -24,7 +25,7 @@ class EuRender {
             }
         }
         ob_start(); ?>
-            <div>
+            <div style="width:<?=$width?>; margin:auto;">
                 <canvas id="show_graph_service"></canvas>
             </div>
             <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
