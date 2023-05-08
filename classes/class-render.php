@@ -4,42 +4,53 @@ require_once 'class-api-rest.php';
 
 class EuRender {
 
-    public static function show_graph_service($attr=[]) {
-        $type = isset( $attr['type'] ) ? $attr['type'] : 'bar';
+    public static function eu_show_graph($attr=[]) {
+        $mode = isset( $attr['mode'] ) ? $attr['mode'] : ( isset($_GET['mode']) ? $_GET['mode'] : 'services' );
+        $type = isset( $attr['type'] ) ? $attr['type'] : ( isset($_GET['type']) ? $_GET['type'] : 'bar' );
         $width = isset( $attr['width'] ) ? $attr['width'] : '50%';
-        $services = [
-            "Dolares" => 0,
-            "Oro" => 0,
-            "Remesa" => 0,
-            "Víveres" => 0
-        ];
+
         $clients = EuApiRest::get_all_clients(null, false, true);
+
+        return self::insert_graph($clients, $mode, $type, $width);
+    }
+
+    public static function insert_graph($clients, $mode, $type, $width) {
+        $fields = [];
+        $labels = [];
+        $values = [];
         foreach( $clients as $client ) {
-            $current_services = explode("\n", $client['meta']['services'] ?? "" );
-            if( is_array( $current_services ) ){
-                foreach( $services as $key => $value ) {
-                    if( in_array($key, $current_services ) ) {
-                        $services[$key] = $value + 1;
+            $current_fields = explode("\n", $client['meta'][$mode] ?? "" );
+            if( is_array( $current_fields ) ){
+                foreach( $current_fields as $field ) {
+                    if( $field == '' ) $field = 'Otro';
+                    if( isset($fields[$field]) ) {
+                        $fields[$field] += 1;
+                    } else {
+                        $fields[$field] = 1;
+                        $labels[] = $field;
                     }
                 }
             }
         }
+        foreach( $labels as $label ) {
+            $values[] = $fields[$label];
+        }
         ob_start(); ?>
             <div style="width:<?=$width?>; margin:auto;">
-                <canvas id="show_graph_service"></canvas>
+                <canvas id="eu_show_graph"></canvas>
             </div>
             <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
             <script>
-                const ctx = document.getElementById('show_graph_service');
+                const ctx = document.getElementById('eu_show_graph');
 
                 new Chart(ctx, {
                     type: "<?=$type?>",
                     data: {
-                        labels: ['Dolares', 'Oro', 'Víveres', 'Remesa',],
+                        labels: <?=json_encode($labels)?>,
                         datasets: [{
-                        label: 'Clientes por Servicio',
-                        data: [<?=$services['Dolares']?>,<?=$services['Oro']?>,<?=$services['Víveres']?>,<?=$services['Remesa']?>],
-                        borderWidth: 1
+                            label: 'Clientes por <?=$mode?>',
+                            data: <?=json_encode($values)?>,
+                            borderWidth: 1
                         }]
                     },
                     options: {
