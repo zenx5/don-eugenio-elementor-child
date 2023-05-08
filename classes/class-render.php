@@ -4,6 +4,58 @@ require_once 'class-api-rest.php';
 
 class EuRender {
 
+    public static function show_graph_service($attr=[]) {
+        $type = isset( $attr['type'] ) ? $attr['type'] : 'bar';
+        $services = [
+            "Dolares" => 0,
+            "Oro" => 0,
+            "Remesa" => 0,
+            "Víveres" => 0
+        ];
+        $clients = EuApiRest::get_all_clients(null, false, true);
+        foreach( $clients as $client ) {
+            $current_services = explode("\n", $client['meta']['services'] ?? "" );
+            if( is_array( $current_services ) ){
+                foreach( $services as $key => $value ) {
+                    if( in_array($key, $current_services ) ) {
+                        $services[$key] = $value + 1;
+                    }
+                }
+            }
+        }
+        ob_start(); ?>
+            <div>
+                <canvas id="show_graph_service"></canvas>
+            </div>
+            <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+            <script>
+                const ctx = document.getElementById('show_graph_service');
+
+                new Chart(ctx, {
+                    type: "<?=$type?>",
+                    data: {
+                        labels: ['Dolares', 'Oro', 'Víveres', 'Remesa',],
+                        datasets: [{
+                        label: 'Clientes por Servicio',
+                        data: [<?=$services['Dolares']?>,<?=$services['Oro']?>,<?=$services['Víveres']?>,<?=$services['Remesa']?>],
+                        borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            </script>
+        <?php
+        $html = ob_get_contents();
+        ob_end_clean();
+        return $html;
+    }
+
     public static function render_pagination($elements = [], $page = 1, $rows_per_page = 5) {
         $total = count($elements);
         $pages = ceil($total / $rows_per_page);
@@ -72,7 +124,6 @@ class EuRender {
     public static function show_client_table() {
         $page = isset($_GET['page_number']) ? $_GET['page_number'] : 1;
         $rows_per_page = isset($_GET['rows_per_page']) ? $_GET['rows_per_page'] : 5;
-        $users = get_users();
         $clients = EuApiRest::get_all_clients(null, false, true);
         if( count( $clients )==0 ) {
             $rows_per_page = 5;

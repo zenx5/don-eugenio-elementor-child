@@ -14,6 +14,7 @@ class EuRoot {
 
     public static function add_shortcodes() {
         add_shortcode('all-clients', ['EuRender', 'show_client_table']);
+        add_shortcode('client-graph-services', ['EuRender', 'show_graph_service']);
     }
 
     // Aqui se definen los enpoints
