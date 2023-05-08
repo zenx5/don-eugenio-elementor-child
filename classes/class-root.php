@@ -1,7 +1,7 @@
 <?php
 
-require 'class-api-rest.php';
-require 'class-render.php';
+require_once 'class-api-rest.php';
+require_once 'class-render.php';
 
 class EuRoot {
 

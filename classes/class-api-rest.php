@@ -2,29 +2,29 @@
 
 class EuApiRest {
 
-    public static function get_all_clients( $request, $call_is_endpoint = true ) {
+    public static function get_all_clients( $request = null, $call_is_endpoint = true, $object_vars = false ) {
         $users = get_users();
         $response = [];
         if ( ! empty( $users ) ) {
             foreach( $users as $user ){
                 unset($user->data->user_pass);
                 if( in_array( 'customer', $user->roles ) || in_array( 'cliente', $user->roles ) ) {
-                    $user->data->meta = get_user_meta( $user->data->ID );
-                    $response[] = $user->data;
+                    $user->data->meta = self::get_metas( get_user_meta( $user->data->ID ) );
+                    $response[] = $object_vars ? get_object_vars($user->data) : $user->data;
                 }
             }
         }
         return $call_is_endpoint ? rest_ensure_response( $response ) : $response;
     }
 
-    public static function get_unique_client( $request, $call_is_endpoint = true ) {
+    public static function get_unique_client( $request, $call_is_endpoint = true, $object_vars = false ) {
         $id = $request->get_param( 'id' );
         $user = get_user_by('ID', $id);
         $response = [];
         if ( ! empty( $user ) ) {
             unset($user->data->user_pass);
-            $user->data->meta = get_user_meta( $user->data->ID );
-            $response = $user->data;
+            $user->data->meta = self::get_metas( get_user_meta( $user->data->ID ) );
+            $response = $object_vars ? get_object_vars($user->data) : $user->data;
         }
         return $call_is_endpoint ? rest_ensure_response( $response ) : $response;
     }
@@ -72,6 +72,17 @@ class EuApiRest {
             }
         }
         return $call_is_endpoint ? rest_ensure_response( $response ) : $response;
+    }
+
+    private static function get_metas( $metas ) {
+        $result = [];
+        foreach( $metas as $key => $value ) {
+            $quantity = count( $value );
+            if( $quantity==0 ) $result[$key] = "";
+            else if( $quantity==1 ) $result[$key] = $value[0];
+            else $result[$key] = "[".implode(",",$value)."]";
+        }
+        return $result;
     }
 
     private static function get_value( $entry, $name) {

@@ -1,5 +1,7 @@
 <?php
 
+require_once 'class-api-rest.php';
+
 class EuRender {
 
     public static function render_pagination($elements = [], $page = 1, $rows_per_page = 5) {
@@ -51,7 +53,11 @@ class EuRender {
                     <?php foreach($data as $item): ?>
                         <tr>
                             <?php foreach( $fields as $field ): ?>
-                                <td><?=$item[ $field['key'] ]?></td>
+                                <?php if(is_array( $field['key'] )): ?>
+                                    <td><?=$item[ $field['key'][0] ][ $field['key'][1] ] ?? "" ?></td>
+                                <?php else: ?>
+                                    <td><?=$item[ $field['key'] ] ?? ""?></td>
+                                <?php endif; ?>
                             <?php endforeach; ?>
                         </tr>
                     <?php endforeach; ?>
@@ -67,16 +73,7 @@ class EuRender {
         $page = isset($_GET['page_number']) ? $_GET['page_number'] : 1;
         $rows_per_page = isset($_GET['rows_per_page']) ? $_GET['rows_per_page'] : 5;
         $users = get_users();
-        $clients = [];
-        if ( ! empty( $users ) ) {
-            foreach( $users as $user ){
-                unset($user->data->user_pass);
-                if( in_array( 'cliente', $user->roles ) ) {
-                    $user->data->meta = get_user_meta( $user->data->ID );
-                    $clients[] = get_object_vars($user->data);
-                }
-            }
-        }
+        $clients = EuApiRest::get_all_clients(null, false, true);
         if( count( $clients )==0 ) {
             $rows_per_page = 5;
         }
@@ -93,7 +90,11 @@ class EuRender {
         $fields = [
             [ "label" => "Nombre", "key" => "user_login" ],
             [ "label" => "Email", "key" => "user_email" ],
-            [ "label" => "Fecha de Registro", "key" => "user_registered" ]
+            [ "label" => "Numero de Cedula", "key" => ["meta","number_id"] ],
+            [ "label" => "Telefono", "key" => ["meta","phone"] ],
+            [ "label" => "Servicios", "key" => ["meta","services"] ],
+            [ "label" => "Registrado por", "key" => ["meta","referer"] ],
+            [ "label" => "Fecha de Registro", "key" => "user_registered" ],
         ];
 		$offset = ($page - 1) * $rows_per_page;
 		$show_clients = array_slice($clients, $offset, $rows_per_page);
